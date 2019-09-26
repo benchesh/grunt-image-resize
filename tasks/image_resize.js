@@ -8,17 +8,17 @@
 
 'use strict';
 
-var gm    = require('gm').subClass({ imageMagick: true });
+var gm = require('gm').subClass({ imageMagick: true });
 var async = require('async');
-var path  = require('path');
-var os    = require('os');
+var path = require('path');
+var os = require('os');
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   // Please see the Grunt documentation for more information regarding task
   // creation: http://gruntjs.com/creating-tasks
 
-  grunt.registerMultiTask('image_resize', 'resize images made easy', function() {
+  grunt.registerMultiTask('image_resize', 'resize images made easy', function () {
 
     var done = this.async();
     var originalOptions = this.options();
@@ -38,18 +38,18 @@ module.exports = function(grunt) {
     }
 
     // Iterate over all specified file groups.
-    this.files.forEach(function(list) {
+    this.files.forEach(function (list) {
       // Iterate over all files specified in the group
-      list.src.forEach(function(f) {
-        var dirname = (list.dest[list.dest.length-1] === '/') ? list.dest : path.dirname(list.dest),
-            filepath = f, imOptions = {
-          srcPath:  filepath,
-          dstPath:  (list.dest[list.dest.length-1] !== '/') ? list.dest : path.join(dirname, path.basename(filepath)) ,
-          width:    options.width,
-          height:   options.height,
-          quality:  options.quality,
-          autoOrient: options.autoOrient
-        };
+      list.src.forEach(function (f) {
+        var dirname = (list.dest[list.dest.length - 1] === '/') ? list.dest : path.dirname(list.dest),
+          filepath = f, imOptions = {
+            srcPath: filepath,
+            dstPath: (list.dest[list.dest.length - 1] !== '/') ? list.dest : path.join(dirname, path.basename(filepath)),
+            width: options.width,
+            height: options.height,
+            quality: options.quality,
+            autoOrient: options.autoOrient
+          };
 
         // Prevent failing if destination directory does not exist.
         if (!grunt.file.isDir(dirname)) {
@@ -57,20 +57,20 @@ module.exports = function(grunt) {
         }
 
         if (options.overwrite === false && grunt.file.isFile(imOptions.dstPath)) {
-          return grunt.log.writeln("Skipping "+filepath+" because destination already exists.\n"+
+          return grunt.log.writeln("Skipping " + filepath + " because destination already exists.\n" +
             "Set options 'overwrite' to true to enable overwriting of files.");
         }
 
-        series.push(function(callback) {
+        series.push(function (callback) {
           // Fail when image would be upscaled unless explicitly allowed
-          gm(filepath).size(function(err, size) {
+          gm(filepath).size(function (err, size) {
             if (!options.upscale &&
-              ((originalOptions.width && size.width < originalOptions.width) ||
-              (originalOptions.height && size.height < originalOptions.height))) {
-              grunt.log.writeln("Copying "+filepath+" instead of resizing, because image would be upscaled.\n"+
+              ((originalOptions.width && size.width <= originalOptions.width) ||
+                (originalOptions.height && size.height <= originalOptions.height))) {
+              grunt.log.writeln("Copying " + filepath + " instead of resizing, because image would be upscaled.\n" +
                 "To allow upscaling, set option 'upscale' to true.");
               grunt.file.copy(filepath, imOptions.dstPath);
-              grunt.log.ok("Image "+filepath+" copied to "+imOptions.dstPath);
+              grunt.log.ok("Image " + filepath + " copied to " + imOptions.dstPath);
               callback();
             }
             else {
@@ -91,14 +91,14 @@ module.exports = function(grunt) {
 
               resizer
                 .quality(Math.floor(imOptions.quality * 100))
-                .write(imOptions.dstPath, function(err) {
-                if (err) {
-                  grunt.fail.warn(err.message);
-                } else {
-                  grunt.log.ok('Image '+filepath+' resized to '+ list.dest);
-                }
-                return callback();
-              });
+                .write(imOptions.dstPath, function (err) {
+                  if (err) {
+                    grunt.fail.warn(err.message);
+                  } else {
+                    grunt.log.ok('Image ' + filepath + ' resized to ' + list.dest);
+                  }
+                  return callback();
+                });
             }
           });
         });
